@@ -1,0 +1,19 @@
+{
+  "name": "redis-basics",
+  "version": "1.0.0",
+  "description": "redis practice work",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "test",
+    "dev": "nodemon ./src/server.js"
+  },
+  "author": "Vignesh",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/static": "^7.0.4",
+    "fastify": "^4.26.2",
+    "nodemon": "^3.1.0",
+    "redis": "^4.6.13"
+  }
+}

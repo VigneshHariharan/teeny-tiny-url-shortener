@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teeny Tiny URL Shortener</title>
+    <style>
+        body {
+            padding: 20px;
+            font-size: 20px;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            row-gap: 20px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid gray;
+            border-radius: 4px;
+            outline: none;
+            max-width: 300px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-transform: uppercase;
+
+        }
+
+        button:hover {
+            background-color: whitesmoke;
+            color: blue;
+        }
+
+        input {
+            height: 24px;
+            font-size: 20px;
+            color: black;
+            border-radius: 4px;
+            padding: 4px 8px;
+            max-width: 480px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            row-gap: 4px;
+        }
+
+        #results {
+            display: none;
+            margin-top: 40px;
+            flex-direction: row;
+            column-gap: 12px;
+            align-items: center;
+        }
+
+        #results code {
+                padding: 12px;
+                background: whitesmoke;
+                border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    <form id="form">
+        <div class="field">
+            <label for="url">Enter the URL:</label>
+            <input id="url" type="url" placeholder="Enter URL" required />
+        </div>
+        <div class="field" >
+            <label for="time">
+                Enter the time for expiry:
+            </label>
+            <input id="time" type="number" placeholder="Enter time in seconds" required />
+        </div>
+
+        <button type="submit" id="submit-url">Shorten the URL</button>
+    </form>
+
+    <div id="results">
+        <code id="url-show"></code>
+        <button id="redirect">Redirect</button>
+        <button id="copy">Copy</button>
+    </div>
+
+    <script>
+        let lastSubmittedUrl = '';
+        const form = document.getElementById("form");
+        const submit = document.getElementById('submit-url');
+        let urlShown = '';
+
+
+        submit.addEventListener("click", async (event) => {
+            event.preventDefault()
+            try {
+                const urlValue = document.querySelector('#url').value;
+                const timeValue = document.querySelector('#time').value;
+              
+                const json = JSON.stringify({
+                    url: urlValue,
+                    time: timeValue
+                })
+                const buffer = await fetch('/short', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    body: json,
+            
+                })
+                const data = await buffer.json();
+
+                if(data.error) {
+                    window.alert(data.error)
+                    return;
+                }
+                const codeElement = document.querySelector("#url-show");
+                lastSubmittedUrl = data.url;
+                urlShown = `http://localhost:3001${lastSubmittedUrl}`
+                codeElement.textContent = urlShown;
+
+                const results = document.querySelector("#results");
+                
+                results.style.display = 'flex';
+            } catch (error) {
+                console.log('gone error', error)
+            }
+        })
+
+        const redirect = document.querySelector("#redirect")
+        redirect.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.open(lastSubmittedUrl)
+        })
+
+        const copy = document.querySelector("#copy");
+        copy.addEventListener("click", (event) => {
+            event.preventDefault();
+
+            navigator.clipboard.writeText(urlShown).then(() => {
+               window.alert(`URL Copied: ${urlShown}`)
+            /* Resolved - text copied to clipboard successfully */
+            },() => {
+            console.error('Failed to copy');
+            /* Rejected - text failed to copy to the clipboard */
+            });
+        })
+    </script>
+</body>
+</html>
